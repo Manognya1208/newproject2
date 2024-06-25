@@ -11,9 +11,7 @@ variables:
 
 steps:
 - task: DockerInstaller@0
-  inputs:
-    dockerVersion: '17.09.0-ce'
-
+ 
 - script: |
     docker build -t $(imageName) .
     docker tag $(imageName) $(dockerRegistryServiceConnection)/$(imageName):$(Build.BuildId)
