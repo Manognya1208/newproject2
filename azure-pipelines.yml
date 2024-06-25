@@ -1,29 +1,26 @@
-# Docker
-# Build a Docker image
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
-
 trigger:
 - main
 
-resources:
-- repo: self
+pool:
+  vmImage: 'ubuntu-latest'
 
 variables:
-  tag: '$(Build.BuildId)'
+  # Replace these with your Docker Hub or Azure Container Registry information
+  dockerRegistryServiceConnection: 'DockerRegistry'
+  imageName: ‘app.py’
 
-stages:
-- stage: Build
-  displayName: Build image
-  jobs:
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-    - task: Docker@2
-      displayName: Build an image
-      inputs:
-        command: build
-        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
-        tags: |
-          $(tag)
+steps:
+- task: DockerInstaller@0
+  inputs:
+    dockerVersion: '17.09.0-ce'
+
+- script: |
+    docker build -t $(imageName) .
+    docker tag $(imageName) $(dockerRegistryServiceConnection)/$(imageName):$(Build.BuildId)
+    docker push $(dockerRegistryServiceConnection)/$(imageName):$(Build.BuildId)
+  displayName: 'Build and Push Docker Image'
+
+- script: echo Build and push completed
+  displayName: 'Build Completed'
+
+
